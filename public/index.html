@@ -13,12 +13,20 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- Hero Section with Percentage and Live Updates -->
+    <!-- Hero Section with Percentage Stats and Live Updates -->
     <div class="hero">
         <div class="hero-stats">
             <div class="percentage-container">
-                <h1 id="incidentPercentage">0%</h1>
-                <p>Ragging Incidents Reported This Month</p>
+                <div class="stat-box campus-stat">
+                    <h1 id="campusPercentage">0%</h1>
+                    <p id="campusName">No Data</p>
+                    <p>Campus with Most Incidents</p>
+                </div>
+                <div class="stat-box type-stat">
+                    <h1 id="typePercentage">0%</h1>
+                    <p id="typeName">No Data</p>
+                    <p>Most Common Ragging Type</p>
+                </div>
             </div>
             <aside class="live-updates-box">
                 <div class="updates-header">
@@ -161,4 +169,4 @@
 
     <script src="script.js"></script>
 </body>
-    </html>
+        </html>
