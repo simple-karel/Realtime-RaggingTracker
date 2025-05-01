@@ -1,86 +1,74 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const fs = require('fs-extra');
+const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const PORT = process.env.PORT || 3000;
-const DATA_DIR = path.join(__dirname, 'data');
-const REPORTS_FILE = path.join(DATA_DIR, 'reports.json');
-
-// Ensure data directory and reports file exist
-fs.ensureDirSync(DATA_DIR);
-if (!fs.existsSync(REPORTS_FILE)) {
-  fs.writeJsonSync(REPORTS_FILE, []);
-}
-
-// Middleware
-app.use(express.json());
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API Routes
-// Get all reports
-app.get('/api/reports', async (req, res) => {
-  try {
-    const reports = await fs.readJson(REPORTS_FILE);
-    res.json(reports);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch reports' });
-  }
+// Middleware to parse JSON
+app.use(express.json());
+
+// API to get reports
+app.get('/api/reports', (req, res) => {
+  fs.readFile(path.join(__dirname, 'data', 'reports.json'), 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading reports:', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.json(JSON.parse(data));
+  });
 });
 
-// Submit a new report
-app.post('/api/reports', async (req, res) => {
-  try {
-    const { university, raggingType, perpetrator, details } = req.body;
-    const report = {
-      id: uuidv4(),
-      university,
-      raggingType,
-      perpetrator: perpetrator || 'Unknown',
-      details,
-      timestamp: new Date().toISOString(),
-    };
-    const reports = await fs.readJson(REPORTS_FILE);
-    reports.push(report);
-    await fs.writeJson(REPORTS_FILE, reports);
-    
-    // Emit real-time update to all clients
-    io.emit('newReport', report);
-    res.status(201).json(report);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to save report' });
-  }
-});
+// API to submit a new report
+app.post('/api/reports', (req, res) => {
+  const newReport = {
+    id: Date.now(),
+    university: req.body.university,
+    raggingType: req.body.raggingType,
+    perpetrator: req.body.perpetrator || 'Anonymous',
+    details: req.body.details,
+    timestamp: new Date().toISOString()
+  };
 
-// Search perpetrators by name
-app.get('/api/perpetrators/:name', async (req, res) => {
-  try {
-    const name = req.params.name.toLowerCase();
-    const reports = await fs.readJson(REPORTS_FILE);
-    const matches = reports.filter(report => 
-      report.perpetrator.toLowerCase().includes(name)
-    );
-    res.json(matches);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to search perpetrators' });
-  }
+  fs.readFile(path.join(__dirname, 'data', 'reports.json'), 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading reports:', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    const reports = JSON.parse(data);
+    reports.push(newReport);
+
+    fs.writeFile(path.join(__dirname, 'data', 'reports.json'), JSON.stringify(reports, null, 2), (err) => {
+      if (err) {
+        console.error('Error writing reports:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+
+      // Emit the new report to all connected clients
+      io.emit('newReport', newReport);
+      res.status(201).json(newReport);
+    });
+  });
 });
 
 // Socket.io connection
 io.on('connection', (socket) => {
-  console.log('New client connected');
+  console.log('New client connected:', socket.id);
+
   socket.on('disconnect', () => {
-    console.log('Client disconnected');
+    console.log('Client disconnected:', socket.id);
   });
 });
 
-// Start server
+// Start the server
+const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
