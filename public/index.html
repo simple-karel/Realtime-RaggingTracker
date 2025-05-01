@@ -13,7 +13,7 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- Hero Section with Percentage Stats and Live Updates -->
+    <!-- Hero Section with Percentage Stats, Pie Charts, and Live Updates -->
     <div class="hero">
         <div class="hero-stats">
             <div class="percentage-container">
@@ -26,6 +26,16 @@
                     <h1 id="typePercentage">0%</h1>
                     <p id="typeName">No Data</p>
                     <p>Most Common Ragging Type</p>
+                </div>
+                <div class="chart-container-hero">
+                    <div class="chart-wrapper">
+                        <div class="chart-title">Incidents by Campus</div>
+                        <canvas id="campusPieChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-title">Incidents by Type</div>
+                        <canvas id="typePieChart"></canvas>
+                    </div>
                 </div>
             </div>
             <aside class="live-updates-box">
@@ -169,4 +179,4 @@
 
     <script src="script.js"></script>
 </body>
-        </html>
+    </html>
