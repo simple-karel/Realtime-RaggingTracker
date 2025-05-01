@@ -8,6 +8,9 @@
   --accent-teal: #40C4FF; /* Neon Teal */
   --accent-magenta: #F50057; /* Vibrant Magenta */
   --accent-yellow: #FFCA28; /* Soft Yellow */
+  --accent-green: #00E676; /* Bright Green */
+  --accent-purple: #AB47BC; /* Vibrant Purple */
+  --accent-orange: #FF6D00; /* Bright Orange */
   --text-light: #B0BEC5; /* Light Gray */
   --card-bg: #1E1E1E; /* Dark Gray for Cards */
   --shadow: rgba(0, 0, 0, 0.5);
@@ -100,6 +103,35 @@ body::before {
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--accent-yellow);
+}
+
+/* Chart Container in Hero Section */
+.chart-container-hero {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.chart-wrapper {
+  background: var(--card-bg);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 5px 15px var(--shadow);
+  width: 200px;
+}
+
+.chart-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  color: var(--accent-teal);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+canvas {
+  width: 100% !important;
+  height: auto !important;
 }
 
 /* Live Updates Box */
@@ -364,32 +396,12 @@ button:active {
   font-size: 0.95rem;
 }
 
-/* Charts */
+/* Charts in Analytics Section */
 .chart-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
   margin-top: 40px;
-}
-
-.chart-wrapper {
-  background: #2E2E2E;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 5px 15px var(--shadow);
-}
-
-.chart-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.1rem;
-  color: var(--accent-teal);
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-canvas {
-  width: 100% !important;
-  height: auto !important;
 }
 
 /* Responsive Design */
@@ -401,6 +413,8 @@ canvas {
   .stat-box h1 { font-size: 3rem; }
   .stat-box p { font-size: 1rem; }
   .stat-box p:nth-child(2) { font-size: 1.2rem; }
+  .chart-container-hero { flex-direction: column; align-items: center; }
+  .chart-wrapper { width: 250px; }
   .live-updates-box { width: 100%; max-width: 400px; height: 300px; }
   .chart-container { grid-template-columns: 1fr; }
 }
@@ -419,4 +433,4 @@ canvas {
   .stat-box p:nth-child(2) { font-size: 0.9rem; }
   h2 { font-size: 1.5rem; }
   .section-header p { font-size: 1rem; }
-                  }
+  }
