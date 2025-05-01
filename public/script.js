@@ -10,7 +10,10 @@ const searchBtn = document.getElementById('searchBtn');
 const searchResults = document.getElementById('searchResults');
 const exportBtn = document.getElementById('exportBtn');
 const liveUpdates = document.getElementById('liveUpdates');
-const incidentPercentage = document.getElementById('incidentPercentage');
+const campusPercentage = document.getElementById('campusPercentage');
+const campusName = document.getElementById('campusName');
+const typePercentage = document.getElementById('typePercentage');
+const typeName = document.getElementById('typeName');
 
 // Chart Elements
 const universityChart = document.getElementById('universityChart').getContext('2d');
@@ -29,10 +32,15 @@ function initCharts() {
       datasets: [{
         label: 'Incidents by University',
         data: [],
-        backgroundColor: '#4DD0E1',
+        backgroundColor: '#40C4FF',
       }]
     },
-    options: { scales: { y: { beginAtZero: true } } }
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { color: '#B0BEC5' } },
+        x: { ticks: { color: '#B0BEC5' } }
+      }
+    }
   });
 
   rtChart = new Chart(raggingTypeChart, {
@@ -42,8 +50,13 @@ function initCharts() {
       datasets: [{
         label: 'Incidents by Ragging Type',
         data: [],
-        backgroundColor: ['#4DD0E1', '#FFAB91', '#81C784', '#FFD54F', '#A1887F', '#90CAF9'],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#81C784', '#A1887F', '#90CAF9'],
       }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: '#B0BEC5' } }
+      }
     }
   });
 
@@ -54,11 +67,16 @@ function initCharts() {
       datasets: [{
         label: 'Incidents Over Time',
         data: [],
-        borderColor: '#4DD0E1',
+        borderColor: '#40C4FF',
         fill: false,
       }]
     },
-    options: { scales: { y: { beginAtZero: true } } }
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { color: '#B0BEC5' } },
+        x: { ticks: { color: '#B0BEC5' } }
+      }
+    }
   });
 
   dChart = new Chart(distributionChart, {
@@ -68,8 +86,13 @@ function initCharts() {
       datasets: [{
         label: 'Incident Distribution',
         data: [],
-        backgroundColor: ['#4DD0E1', '#FFAB91', '#81C784', '#FFD54F'],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#81C784'],
       }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: '#B0BEC5' } }
+      }
     }
   });
 }
@@ -80,7 +103,7 @@ async function fetchData() {
     const response = await fetch('/api/reports');
     const reports = await response.json();
     updateCharts(reports);
-    updatePercentage(reports);
+    updateStats(reports);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -125,24 +148,42 @@ function updateCharts(reports) {
   dChart.update();
 }
 
-// Calculate and Update Percentage
-function updatePercentage(reports) {
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  
-  // Filter reports for the current month
-  const thisMonthReports = reports.filter(report => {
-    const reportDate = new Date(report.timestamp);
-    return reportDate.getMonth() === currentMonth && reportDate.getFullYear() === currentYear;
-  });
+// Update Stats for Campus and Ragging Type
+function updateStats(reports) {
+  if (reports.length === 0) {
+    campusPercentage.textContent = '0%';
+    campusName.textContent = 'No Data';
+    typePercentage.textContent = '0%';
+    typeName.textContent = 'No Data';
+    return;
+  }
 
-  // Hypothetical average monthly reports (for demonstration purposes)
-  const averageMonthlyReports = 100; // Adjust this value as needed
-  const percentage = thisMonthReports.length
-    ? Math.min(100, Math.round((thisMonthReports.length / averageMonthlyReports) * 100))
-    : 0;
+  // Calculate Campus with Most Incidents
+  const universityCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
+  const totalIncidents = reports.length;
+  const maxUniversity = Object.keys(universityCounts).reduce((a, b) =>
+    universityCounts[a] > universityCounts[b] ? a : b
+  );
+  const campusIncidents = universityCounts[maxUniversity];
+  const campusPercent = Math.round((campusIncidents / totalIncidents) * 100);
+  campusPercentage.textContent = `${campusPercent}%`;
+  campusName.textContent = maxUniversity;
 
-  incidentPercentage.textContent = `${percentage}%`;
+  // Calculate Most Common Ragging Type
+  const raggingTypeCounts = reports.reduce((acc, report) => {
+    acc[report.raggingType] = (acc[report.raggingType] || 0) + 1;
+    return acc;
+  }, {});
+  const maxType = Object.keys(raggingTypeCounts).reduce((a, b) =>
+    raggingTypeCounts[a] > raggingTypeCounts[b] ? a : b
+  );
+  const typeIncidents = raggingTypeCounts[maxType];
+  const typePercent = Math.round((typeIncidents / totalIncidents) * 100);
+  typePercentage.textContent = `${typePercent}%`;
+  typeName.textContent = maxType;
 }
 
 // Submit Report
