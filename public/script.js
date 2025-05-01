@@ -20,11 +20,14 @@ const universityChart = document.getElementById('universityChart').getContext('2
 const raggingTypeChart = document.getElementById('raggingTypeChart').getContext('2d');
 const trendChart = document.getElementById('trendChart').getContext('2d');
 const distributionChart = document.getElementById('distributionChart').getContext('2d');
+const campusPieChart = document.getElementById('campusPieChart').getContext('2d');
+const typePieChart = document.getElementById('typePieChart').getContext('2d');
 
 // Initialize Charts
-let uChart, rtChart, tChart, dChart;
+let uChart, rtChart, tChart, dChart, cpChart, tpChart;
 
 function initCharts() {
+  // University Bar Chart (Analytics Section)
   uChart = new Chart(universityChart, {
     type: 'bar',
     data: {
@@ -43,6 +46,7 @@ function initCharts() {
     }
   });
 
+  // Ragging Type Pie Chart (Analytics Section)
   rtChart = new Chart(raggingTypeChart, {
     type: 'pie',
     data: {
@@ -50,7 +54,7 @@ function initCharts() {
       datasets: [{
         label: 'Incidents by Ragging Type',
         data: [],
-        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#81C784', '#A1887F', '#90CAF9'],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#00E676', '#AB47BC', '#FF6D00'],
       }]
     },
     options: {
@@ -60,6 +64,7 @@ function initCharts() {
     }
   });
 
+  // Trend Line Chart (Analytics Section)
   tChart = new Chart(trendChart, {
     type: 'line',
     data: {
@@ -79,6 +84,7 @@ function initCharts() {
     }
   });
 
+  // Distribution Doughnut Chart (Analytics Section)
   dChart = new Chart(distributionChart, {
     type: 'doughnut',
     data: {
@@ -86,12 +92,70 @@ function initCharts() {
       datasets: [{
         label: 'Incident Distribution',
         data: [],
-        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#81C784'],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#00E676'],
       }]
     },
     options: {
       plugins: {
         legend: { labels: { color: '#B0BEC5' } }
+      }
+    }
+  });
+
+  // Campus Pie Chart (Hero Section)
+  cpChart = new Chart(campusPieChart, {
+    type: 'pie',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incidents by Campus',
+        data: [],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#00E676', '#AB47BC', '#FF6D00', '#42A5F5', '#EC407A', '#FFEE58'],
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+              const percentage = total ? Math.round((value / total) * 100) : 0;
+              return `${label}: ${percentage}%`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Ragging Type Pie Chart (Hero Section)
+  tpChart = new Chart(typePieChart, {
+    type: 'pie',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incidents by Ragging Type',
+        data: [],
+        backgroundColor: ['#40C4FF', '#F50057', '#FFCA28', '#00E676', '#AB47BC', '#FF6D00'],
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+              const percentage = total ? Math.round((value / total) * 100) : 0;
+              return `${label}: ${percentage}%`;
+            }
+          }
+        }
       }
     }
   });
@@ -104,6 +168,7 @@ async function fetchData() {
     const reports = await response.json();
     updateCharts(reports);
     updateStats(reports);
+    updateHeroCharts(reports);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -138,7 +203,7 @@ function updateCharts(reports) {
   tChart.data.datasets[0].data = Object.values(dateCounts);
   tChart.update();
 
-  // Distribution Chart (simplified)
+  // Distribution Chart
   const distributionCounts = reports.reduce((acc, report) => {
     acc[report.university] = (acc[report.university] || 0) + 1;
     return acc;
@@ -184,6 +249,37 @@ function updateStats(reports) {
   const typePercent = Math.round((typeIncidents / totalIncidents) * 100);
   typePercentage.textContent = `${typePercent}%`;
   typeName.textContent = maxType;
+}
+
+// Update Pie Charts in Hero Section
+function updateHeroCharts(reports) {
+  if (reports.length === 0) {
+    cpChart.data.labels = [];
+    cpChart.data.datasets[0].data = [];
+    cpChart.update();
+    tpChart.data.labels = [];
+    tpChart.data.datasets[0].data = [];
+    tpChart.update();
+    return;
+  }
+
+  // Campus Pie Chart
+  const universityCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
+  cpChart.data.labels = Object.keys(universityCounts);
+  cpChart.data.datasets[0].data = Object.values(universityCounts);
+  cpChart.update();
+
+  // Ragging Type Pie Chart
+  const raggingTypeCounts = reports.reduce((acc, report) => {
+    acc[report.raggingType] = (acc[report.raggingType] || 0) + 1;
+    return acc;
+  }, {});
+  tpChart.data.labels = Object.keys(raggingTypeCounts);
+  tpChart.data.datasets[0].data = Object.values(raggingTypeCounts);
+  tpChart.update();
 }
 
 // Submit Report
