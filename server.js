@@ -14,9 +14,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware to parse JSON
 app.use(express.json());
 
+// Ensure data directory and reports.json exist
+const reportsFilePath = path.join(__dirname, 'data', 'reports.json');
+if (!fs.existsSync(path.join(__dirname, 'data'))) {
+  fs.mkdirSync(path.join(__dirname, 'data'));
+}
+if (!fs.existsSync(reportsFilePath)) {
+  fs.writeFileSync(reportsFilePath, JSON.stringify([], null, 2));
+}
+
 // API to get reports
 app.get('/api/reports', (req, res) => {
-  fs.readFile(path.join(__dirname, 'data', 'reports.json'), 'utf8', (err, data) => {
+  fs.readFile(reportsFilePath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading reports:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -36,7 +45,7 @@ app.post('/api/reports', (req, res) => {
     timestamp: new Date().toISOString()
   };
 
-  fs.readFile(path.join(__dirname, 'data', 'reports.json'), 'utf8', (err, data) => {
+  fs.readFile(reportsFilePath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading reports:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -45,7 +54,7 @@ app.post('/api/reports', (req, res) => {
     const reports = JSON.parse(data);
     reports.push(newReport);
 
-    fs.writeFile(path.join(__dirname, 'data', 'reports.json'), JSON.stringify(reports, null, 2), (err) => {
+    fs.writeFile(reportsFilePath, JSON.stringify(reports, null, 2), (err) => {
       if (err) {
         console.error('Error writing reports:', err);
         return res.status(500).json({ error: 'Internal Server Error' });
