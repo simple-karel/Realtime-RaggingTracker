@@ -13,28 +13,29 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- Floating background elements -->
-    <div class="floating-element float-1"></div>
-    <div class="floating-element float-2"></div>
+    <!-- Floating particle orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
     <div class="container">
         <header>
-            <h1>Ragging Tracker System</h1>
-            <p>Anonymously report and analyze ragging incidents in Sri Lankan universities with real-time insights</p>
+            <h1>Ragging Tracker</h1>
+            <p>Anonymously report and analyze ragging incidents in Sri Lankan universities</p>
         </header>
 
         <!-- Report Submission Section -->
-        <section class="form-section">
-            <div class="section-badge">Report Incident</div>
+        <section class="card form-card">
+            <div class="section-badge">Report</div>
             <div class="section-header">
-                <h2>Submit a Report</h2>
+                <h2>Submit Incident Report</h2>
             </div>
             
             <form id="reportForm">
                 <div class="form-group">
                     <label for="university"><i class="fas fa-university"></i> University</label>
                     <select id="university" required>
-                        <option value="" disabled selected>Select University</option>
+                        <option value="" disabled selected>Choose University</option>
                         <option value="Colombo">Colombo</option>
                         <option value="Jaffna">Jaffna</option>
                         <option value="Peradeniya">Peradeniya</option>
@@ -50,7 +51,7 @@
                 <div class="form-group">
                     <label for="raggingType"><i class="fas fa-exclamation-circle"></i> Ragging Type</label>
                     <select id="raggingType" required>
-                        <option value="" disabled selected>Select Ragging Type</option>
+                        <option value="" disabled selected>Choose Ragging Type</option>
                         <option value="Verbal Harassment">Verbal Harassment</option>
                         <option value="Physical Harassment">Physical Harassment</option>
                         <option value="Sexual Harassment">Sexual Harassment</option>
@@ -61,13 +62,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="perpetrator"><i class="fas fa-user"></i> Perpetrator Name (Optional)</label>
-                    <input type="text" id="perpetrator" placeholder="Enter perpetrator name (if known)">
+                    <label for="perpetrator"><i class="fas fa-user-secret"></i> Perpetrator (Optional)</label>
+                    <input type="text" id="perpetrator" placeholder="Enter name (if known)">
                 </div>
 
                 <div class="form-group">
                     <label for="details"><i class="fas fa-comment-alt"></i> Incident Details</label>
-                    <textarea id="details" rows="5" placeholder="Describe the incident in detail" required></textarea>
+                    <textarea id="details" rows="5" placeholder="Describe the incident" required></textarea>
                 </div>
 
                 <button type="submit" id="submitReportBtn">
@@ -80,19 +81,19 @@
         <div class="glow-line"></div>
 
         <!-- Search Section -->
-        <section class="search-section">
-            <div class="section-badge">Search Perpetrators</div>
+        <section class="card search-card">
+            <div class="section-badge">Search</div>
             <div class="section-header">
-                <h2>Find Reported Perpetrators</h2>
+                <h2>Search Perpetrators</h2>
             </div>
             
             <div class="form-group">
                 <label for="searchQuery"><i class="fas fa-search"></i> Perpetrator Name</label>
-                <input type="text" id="searchQuery" placeholder="Enter name to search">
+                <input type="text" id="searchQuery" placeholder="Search by name">
             </div>
 
             <div class="form-group">
-                <label for="filterOptions"><i class="fas fa-filter"></i> Filter Results</label>
+                <label for="filterOptions"><i class="fas fa-filter"></i> Filter By</label>
                 <select id="filterOptions">
                     <option value="all">All Reports</option>
                     <option value="recent">Recent Reports</option>
@@ -108,7 +109,7 @@
             <div id="searchResults">
                 <div class="result-item">
                     <div class="result-title">No Results</div>
-                    <div class="result-description">Search for a perpetrator to view reported incidents.</div>
+                    <div class="result-description">Search for a perpetrator to view reports.</div>
                 </div>
             </div>
         </section>
@@ -116,20 +117,20 @@
         <div class="glow-line"></div>
 
         <!-- Analytics Section -->
-        <section class="analytics-section">
-            <div class="section-badge">Analytics</div>
+        <section class="card analytics-card">
+            <div class="section-badge">Insights</div>
             <div class="section-header">
-                <h2>Incident Insights</h2>
+                <h2>Incident Analytics</h2>
             </div>
             
             <div class="chart-container">
                 <div class="chart-wrapper">
-                    <div class="chart-title">Incidents by University</div>
+                    <div class="chart-title">By University</div>
                     <canvas id="universityChart"></canvas>
                 </div>
                 
                 <div class="chart-wrapper">
-                    <div class="chart-title">Incidents by Ragging Type</div>
+                    <div class="chart-title">By Ragging Type</div>
                     <canvas id="raggingTypeChart"></canvas>
                 </div>
                 
@@ -139,17 +140,17 @@
                 </div>
                 
                 <div class="chart-wrapper">
-                    <div class="chart-title">Incident Distribution</div>
+                    <div class="chart-title">Distribution</div>
                     <canvas id="distributionChart"></canvas>
                 </div>
             </div>
             
             <button type="button" id="exportBtn">
-                <i class="fas fa-file-export"></i> Export Insights
+                <i class="fas fa-file-export"></i> Export Data
             </button>
         </section>
     </div>
 
     <script src="script.js"></script>
 </body>
-                    </html>
+    </html>
