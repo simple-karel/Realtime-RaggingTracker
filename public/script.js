@@ -10,6 +10,7 @@ const searchBtn = document.getElementById('searchBtn');
 const searchResults = document.getElementById('searchResults');
 const exportBtn = document.getElementById('exportBtn');
 const liveUpdates = document.getElementById('liveUpdates');
+const incidentPercentage = document.getElementById('incidentPercentage');
 
 // Chart Elements
 const universityChart = document.getElementById('universityChart').getContext('2d');
@@ -79,6 +80,7 @@ async function fetchData() {
     const response = await fetch('/api/reports');
     const reports = await response.json();
     updateCharts(reports);
+    updatePercentage(reports);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -121,6 +123,26 @@ function updateCharts(reports) {
   dChart.data.labels = Object.keys(distributionCounts);
   dChart.data.datasets[0].data = Object.values(distributionCounts);
   dChart.update();
+}
+
+// Calculate and Update Percentage
+function updatePercentage(reports) {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  // Filter reports for the current month
+  const thisMonthReports = reports.filter(report => {
+    const reportDate = new Date(report.timestamp);
+    return reportDate.getMonth() === currentMonth && reportDate.getFullYear() === currentYear;
+  });
+
+  // Hypothetical average monthly reports (for demonstration purposes)
+  const averageMonthlyReports = 100; // Adjust this value as needed
+  const percentage = thisMonthReports.length
+    ? Math.min(100, Math.round((thisMonthReports.length / averageMonthlyReports) * 100))
+    : 0;
+
+  incidentPercentage.textContent = `${percentage}%`;
 }
 
 // Submit Report
