@@ -13,25 +13,26 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- Background floating elements -->
+    <!-- Floating background elements -->
     <div class="floating-element float-1"></div>
     <div class="floating-element float-2"></div>
 
     <div class="container">
         <header>
             <h1>Ragging Tracker System</h1>
-            <p>Anonymous reporting and real-time analytics for ragging incidents in Sri Lankan universities</p>
+            <p>Anonymously report and analyze ragging incidents in Sri Lankan universities with real-time insights</p>
         </header>
 
+        <!-- Report Submission Section -->
         <section class="form-section">
-            <div class="section-badge">Report</div>
+            <div class="section-badge">Report Incident</div>
             <div class="section-header">
-                <h2>Submit Incident Report</h2>
+                <h2>Submit a Report</h2>
             </div>
             
             <form id="reportForm">
                 <div class="form-group">
-                    <label for="university">University</label>
+                    <label for="university"><i class="fas fa-university"></i> University</label>
                     <select id="university" required>
                         <option value="" disabled selected>Select University</option>
                         <option value="Colombo">Colombo</option>
@@ -47,7 +48,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="raggingType">Ragging Type</label>
+                    <label for="raggingType"><i class="fas fa-exclamation-circle"></i> Ragging Type</label>
                     <select id="raggingType" required>
                         <option value="" disabled selected>Select Ragging Type</option>
                         <option value="Verbal Harassment">Verbal Harassment</option>
@@ -60,17 +61,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="perpetrator">Perpetrator Name (Optional)</label>
-                    <input type="text" id="perpetrator" placeholder="Enter perpetrator name">
+                    <label for="perpetrator"><i class="fas fa-user"></i> Perpetrator Name (Optional)</label>
+                    <input type="text" id="perpetrator" placeholder="Enter perpetrator name (if known)">
                 </div>
 
                 <div class="form-group">
-                    <label for="details">Incident Details</label>
-                    <textarea id="details" rows="4" placeholder="Describe the incident" required></textarea>
+                    <label for="details"><i class="fas fa-comment-alt"></i> Incident Details</label>
+                    <textarea id="details" rows="5" placeholder="Describe the incident in detail" required></textarea>
                 </div>
 
                 <button type="submit" id="submitReportBtn">
-                    <i class="fas fa-sync-alt"></i> Submit Report
+                    <i class="fas fa-paper-plane"></i> Submit Report
                 </button>
             </form>
             <div class="loader" id="reportLoader"></div>
@@ -78,19 +79,20 @@
 
         <div class="glow-line"></div>
 
+        <!-- Search Section -->
         <section class="search-section">
-            <div class="section-badge">Search</div>
+            <div class="section-badge">Search Perpetrators</div>
             <div class="section-header">
-                <h2>Perpetrator Search</h2>
+                <h2>Find Reported Perpetrators</h2>
             </div>
             
             <div class="form-group">
-                <label for="searchQuery">Search Perpetrator</label>
-                <input type="text" id="searchQuery" placeholder="Enter perpetrator name">
+                <label for="searchQuery"><i class="fas fa-search"></i> Perpetrator Name</label>
+                <input type="text" id="searchQuery" placeholder="Enter name to search">
             </div>
 
             <div class="form-group">
-                <label for="filterOptions">Filter By</label>
+                <label for="filterOptions"><i class="fas fa-filter"></i> Filter Results</label>
                 <select id="filterOptions">
                     <option value="all">All Reports</option>
                     <option value="recent">Recent Reports</option>
@@ -104,20 +106,20 @@
             </button>
 
             <div id="searchResults">
-                <!-- Search results will appear here -->
                 <div class="result-item">
                     <div class="result-title">No Results</div>
-                    <div class="result-description">Search for a perpetrator to view reports.</div>
+                    <div class="result-description">Search for a perpetrator to view reported incidents.</div>
                 </div>
             </div>
         </section>
 
         <div class="glow-line"></div>
 
+        <!-- Analytics Section -->
         <section class="analytics-section">
             <div class="section-badge">Analytics</div>
             <div class="section-header">
-                <h2>Incident Analytics</h2>
+                <h2>Incident Insights</h2>
             </div>
             
             <div class="chart-container">
@@ -132,7 +134,7 @@
                 </div>
                 
                 <div class="chart-wrapper">
-                    <div class="chart-title">Incident Trends Over Time</div>
+                    <div class="chart-title">Trends Over Time</div>
                     <canvas id="trendChart"></canvas>
                 </div>
                 
@@ -143,11 +145,11 @@
             </div>
             
             <button type="button" id="exportBtn">
-                <i class="fas fa-file-export"></i> Export Report
+                <i class="fas fa-file-export"></i> Export Insights
             </button>
         </section>
     </div>
 
     <script src="script.js"></script>
 </body>
-                                                                                                   </html>
+                    </html>
