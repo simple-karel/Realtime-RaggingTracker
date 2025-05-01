@@ -1,227 +1,280 @@
+// Initialize Socket.io
 const socket = io();
 
 // DOM Elements
 const reportForm = document.getElementById('reportForm');
+const reportLoader = document.getElementById('reportLoader');
 const searchQuery = document.getElementById('searchQuery');
 const filterOptions = document.getElementById('filterOptions');
 const searchBtn = document.getElementById('searchBtn');
 const searchResults = document.getElementById('searchResults');
-const reportLoader = document.getElementById('reportLoader');
 const exportBtn = document.getElementById('exportBtn');
+const liveUpdates = document.getElementById('liveUpdates');
+
+// Chart Elements
 const universityChart = document.getElementById('universityChart').getContext('2d');
 const raggingTypeChart = document.getElementById('raggingTypeChart').getContext('2d');
 const trendChart = document.getElementById('trendChart').getContext('2d');
 const distributionChart = document.getElementById('distributionChart').getContext('2d');
 
-// Chart Instances
-let uniChart, typeChart, trendChartInstance, distChart;
-
-// Data Categories
-const universities = [
-  'Colombo', 'Jaffna', 'Peradeniya', 'Jayewardenepura', 'Ruhuna',
-  'Sabaragamuwa', 'Kelaniya', 'Eastern', 'South Eastern'
-];
-const raggingTypes = [
-  'Verbal Harassment', 'Physical Harassment', 'Sexual Harassment',
-  'Psychological Abuse', 'Cyber Bullying', 'Other'
-];
-
 // Initialize Charts
-function initCharts(reports) {
-  const uniCounts = universities.map(uni => 
-    reports.filter(r => r.university === uni).length
-  );
-  const typeCounts = raggingTypes.map(type => 
-    reports.filter(r => r.raggingType === type).length
-  );
-  const total = reports.length || 1; // Avoid division by zero
-  const uniPercentages = uniCounts.map(count => ((count / total) * 100).toFixed(1));
-  const typePercentages = typeCounts.map(count => ((count / total) * 100).toFixed(1));
+let uChart, rtChart, tChart, dChart;
 
-  // University Chart (Doughnut)
-  if (uniChart) uniChart.destroy();
-  uniChart = new Chart(universityChart, {
-    type: 'doughnut',
-    data: {
-      labels: universities,
-      datasets: [{
-        data: uniPercentages,
-        backgroundColor: ['#00e6ff', '#ff2d8d', '#7b2dff', '#ffcc00', '#33cc99', '#ff9933', '#99cc33', '#ff6699', '#66ccff'],
-        borderColor: '#0a0e17',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      plugins: {
-        title: { display: true, text: 'Incidents by University (%)', color: '#e6f0ff', font: { size: 16 } },
-        legend: { labels: { color: '#e6f0ff' } }
-      },
-      animation: { animateScale: true, animateRotate: true }
-    }
-  });
-
-  // Ragging Type Chart (Doughnut)
-  if (typeChart) typeChart.destroy();
-  typeChart = new Chart(raggingTypeChart, {
-    type: 'doughnut',
-    data: {
-      labels: raggingTypes,
-      datasets: [{
-        data: typePercentages,
-        backgroundColor: ['#00e6ff', '#ff2d8d', '#7b2dff', '#ffcc00', '#33cc99', '#66ccff'],
-        borderColor: '#0a0e17',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      plugins: {
-        title: { display: true, text: 'Incidents by Ragging Type (%)', color: '#e6f0ff', font: { size: 16 } },
-        legend: { labels: { color: '#e6f0ff' } }
-      },
-      animation: { animateScale: true, animateRotate: true }
-    }
-  });
-
-  // Trend Chart (Line)
-  const months = [...new Set(reports.map(r => new Date(r.timestamp).toLocaleString('default', { month: 'short', year: 'numeric' })))].sort();
-  const trendData = months.map(month => ({
-    month,
-    count: reports.filter(r => new Date(r.timestamp).toLocaleString('default', { month: 'short', year: 'numeric' }) === month).length
-  }));
-  if (trendChartInstance) trendChartInstance.destroy();
-  trendChartInstance = new Chart(trendChart, {
-    type: 'line',
-    data: {
-      labels: months,
-      datasets: [{
-        label: 'Incidents',
-        data: trendData.map(d => d.count),
-        borderColor: '#00e6ff',
-        backgroundColor: 'rgba(0, 230, 255, 0.2)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      plugins: {
-        title: { display: true, text: 'Incident Trends', color: '#e6f0ff', font: { size: 16 } },
-        legend: { labels: { color: '#e6f0ff' } }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: '#e6f0ff' } },
-        x: { ticks: { color: '#e6f0ff' } }
-      }
-    }
-  });
-
-  // Distribution Chart (Bar)
-  if (distChart) distChart.destroy();
-  distChart = new Chart(distributionChart, {
+function initCharts() {
+  uChart = new Chart(universityChart, {
     type: 'bar',
     data: {
-      labels: universities,
+      labels: [],
       datasets: [{
-        label: 'Incidents',
-        data: uniCounts,
-        backgroundColor: '#00e6ff',
-        borderColor: '#0a0e17',
-        borderWidth: 1
+        label: 'Incidents by University',
+        data: [],
+        backgroundColor: '#4DD0E1',
       }]
     },
-    options: {
-      plugins: {
-        title: { display: true, text: 'Incident Distribution', color: '#e6f0ff', font: { size: 16 } },
-        legend: { labels: { color: '#e6f0ff' } }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: '#e6f0ff' } },
-        x: { ticks: { color: '#e6f0ff' } }
-      }
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+
+  rtChart = new Chart(raggingTypeChart, {
+    type: 'pie',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incidents by Ragging Type',
+        data: [],
+        backgroundColor: ['#4DD0E1', '#FFAB91', '#81C784', '#FFD54F', '#A1887F', '#90CAF9'],
+      }]
+    }
+  });
+
+  tChart = new Chart(trendChart, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incidents Over Time',
+        data: [],
+        borderColor: '#4DD0E1',
+        fill: false,
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+
+  dChart = new Chart(distributionChart, {
+    type: 'doughnut',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incident Distribution',
+        data: [],
+        backgroundColor: ['#4DD0E1', '#FFAB91', '#81C784', '#FFD54F'],
+      }]
     }
   });
 }
 
-// Fetch and Update Reports
-async function fetchReports() {
-  const response = await fetch('/api/reports');
-  const reports = await response.json();
-  initCharts(reports);
+// Fetch and Update Data
+async function fetchData() {
+  try {
+    const response = await fetch('/api/reports');
+    const reports = await response.json();
+    updateCharts(reports);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+function updateCharts(reports) {
+  // University Chart
+  const universityCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
+  uChart.data.labels = Object.keys(universityCounts);
+  uChart.data.datasets[0].data = Object.values(universityCounts);
+  uChart.update();
+
+  // Ragging Type Chart
+  const raggingTypeCounts = reports.reduce((acc, report) => {
+    acc[report.raggingType] = (acc[report.raggingType] || 0) + 1;
+    return acc;
+  }, {});
+  rtChart.data.labels = Object.keys(raggingTypeCounts);
+  rtChart.data.datasets[0].data = Object.values(raggingTypeCounts);
+  rtChart.update();
+
+  // Trend Chart (by date)
+  const dates = reports.map(report => new Date(report.timestamp).toLocaleDateString());
+  const dateCounts = dates.reduce((acc, date) => {
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
+  tChart.data.labels = Object.keys(dateCounts);
+  tChart.data.datasets[0].data = Object.values(dateCounts);
+  tChart.update();
+
+  // Distribution Chart (simplified)
+  const distributionCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
+  dChart.data.labels = Object.keys(distributionCounts);
+  dChart.data.datasets[0].data = Object.values(distributionCounts);
+  dChart.update();
 }
 
 // Submit Report
 reportForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   reportLoader.style.display = 'block';
+
   const report = {
     university: document.getElementById('university').value,
     raggingType: document.getElementById('raggingType').value,
     perpetrator: document.getElementById('perpetrator').value,
-    details: document.getElementById('details').value
+    details: document.getElementById('details').value,
   };
 
   try {
-    await fetch('/api/reports', {
+    const response = await fetch('/api/reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(report)
+      body: JSON.stringify(report),
     });
-    reportForm.reset();
-  } catch (err) {
-    console.error('Error submitting report:', err);
+
+    if (response.ok) {
+      reportForm.reset();
+      fetchData();
+    } else {
+      alert('Error submitting report');
+    }
+  } catch (error) {
+    console.error('Error submitting report:', error);
+    alert('Error submitting report');
   } finally {
     reportLoader.style.display = 'none';
   }
 });
 
-// Search Perpetrators
+// Search Reports
 searchBtn.addEventListener('click', async () => {
-  const name = searchQuery.value.trim();
+  const query = searchQuery.value.toLowerCase();
   const filter = filterOptions.value;
-  if (!name) return;
 
-  const response = await fetch(`/api/perpetrators/${name}`);
-  let results = await response.json();
+  try {
+    const response = await fetch('/api/reports');
+    const reports = await response.json();
 
-  // Apply filters
-  if (filter === 'recent') {
-    results = results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
-  } else if (filter === 'university') {
-    results = results.sort((a, b) => a.university.localeCompare(b.university));
-  } else if (filter === 'raggingType') {
-    results = results.sort((a, b) => a.raggingType.localeCompare(b.raggingType));
+    let filteredReports = reports;
+
+    if (query) {
+      filteredReports = filteredReports.filter(report =>
+        report.perpetrator.toLowerCase().includes(query) ||
+        report.university.toLowerCase().includes(query) ||
+        report.raggingType.toLowerCase().includes(query) ||
+        report.details.toLowerCase().includes(query)
+      );
+    }
+
+    if (filter !== 'all') {
+      if (filter === 'recent') {
+        filteredReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        filteredReports = filteredReports.slice(0, 5);
+      } else if (filter === 'university') {
+        filteredReports.sort((a, b) => a.university.localeCompare(b.university));
+      } else if (filter === 'raggingType') {
+        filteredReports.sort((a, b) => a.raggingType.localeCompare(b.raggingType));
+      }
+    }
+
+    displaySearchResults(filteredReports);
+  } catch (error) {
+    console.error('Error searching reports:', error);
+  }
+});
+
+function displaySearchResults(reports) {
+  searchResults.innerHTML = '';
+  if (reports.length === 0) {
+    searchResults.innerHTML = `
+      <div class="result-item">
+        <div class="result-title">No Results</div>
+        <div class="result-description">No reports match your search criteria.</div>
+      </div>
+    `;
+    return;
   }
 
-  searchResults.innerHTML = results.length
-    ? results.map(r => `
-        <div class="result-item">
-          <div class="result-title">${r.perpetrator}</div>
-          <div class="result-description">${r.university} - ${r.raggingType} (${new Date(r.timestamp).toLocaleDateString()})</div>
-          <div class="data-tags">
-            <span class="data-badge">${r.university}</span>
-            <span class="data-badge">${r.raggingType}</span>
-          </div>
-        </div>
-      `).join('')
-    : '<div class="result-item"><div class="result-title">No Results</div><div class="result-description">No reports found for this perpetrator.</div></div>';
-});
+  reports.forEach(report => {
+    const resultItem = document.createElement('div');
+    resultItem.classList.add('result-item');
+    resultItem.innerHTML = `
+      <div class="result-title">${report.university} - ${report.raggingType}</div>
+      <div class="result-description">
+        Perpetrator: ${report.perpetrator || 'Anonymous'}<br>
+        Details: ${report.details}<br>
+        Reported on: ${new Date(report.timestamp).toLocaleString()}
+      </div>
+    `;
+    searchResults.appendChild(resultItem);
+  });
+}
 
-// Export Report
+// Export Data
 exportBtn.addEventListener('click', async () => {
-  const response = await fetch('/api/reports');
-  const reports = await response.json();
-  const blob = new Blob([JSON.stringify(reports, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'ragging_reports.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  try {
+    const response = await fetch('/api/reports');
+    const reports = await response.json();
+
+    const csvContent = [
+      ['ID', 'University', 'Ragging Type', 'Perpetrator', 'Details', 'Timestamp'],
+      ...reports.map(report => [
+        report.id,
+        report.university,
+        report.raggingType,
+        report.perpetrator || 'Anonymous',
+        `"${report.details.replace(/"/g, '""')}"`,
+        report.timestamp
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ragging_reports.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error exporting data:', error);
+    alert('Error exporting data');
+  }
 });
 
-// Real-time Updates
-socket.on('newReport', () => {
-  fetchReports();
+// Real-Time Live Updates Box
+socket.on('newReport', (report) => {
+  const updateItem = document.createElement('div');
+  updateItem.classList.add('update-item');
+  updateItem.innerHTML = `
+    <div class="update-text">
+      New report: ${report.university} - ${report.raggingType}
+    </div>
+    <div class="update-timestamp">
+      ${new Date(report.timestamp).toLocaleString()}
+    </div>
+  `;
+  liveUpdates.appendChild(updateItem);
+
+  // Limit to last 20 updates
+  const updateItems = liveUpdates.querySelectorAll('.update-item');
+  if (updateItems.length > 20) {
+    liveUpdates.removeChild(updateItems[0]);
+  }
+
+  // Scroll to the bottom
+  liveUpdates.scrollTop = liveUpdates.scrollHeight;
 });
 
-// Initial Load
-fetchReports();
+// Initialize
+initCharts();
+fetchData();
