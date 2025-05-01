@@ -95,9 +95,96 @@ body::before {
   100% { opacity: 1; transform: translateY(0); }
 }
 
+/* Main Layout */
+.main-layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Live Updates Box Sidebar */
+.live-updates-box {
+  width: 300px;
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px var(--shadow);
+  padding: 20px;
+  height: calc(100vh - 40px);
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.updates-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.updates-header h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  color: var(--primary);
+}
+
+.updates-header p {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.updates-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.updates-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.updates-list::-webkit-scrollbar-track {
+  background: #F9FAFB;
+  border-radius: 4px;
+}
+
+.updates-list::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.update-item {
+  background: #F9FAFB;
+  border-radius: 10px;
+  padding: 10px;
+  animation: slide-in 0.5s ease-out;
+}
+
+.update-text {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.update-timestamp {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 5px;
+}
+
+@keyframes slide-in {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
 /* Container */
 .container {
-  max-width: 1300px;
+  flex: 1;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -304,6 +391,17 @@ canvas {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .live-updates-box {
+    width: 100%;
+    height: 300px;
+    position: static;
+  }
+}
+
 @media (max-width: 992px) {
   .hero-content h1 { font-size: 2.5rem; }
   .chart-container { grid-template-columns: 1fr; }
