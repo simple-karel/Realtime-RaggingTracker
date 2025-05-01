@@ -15,23 +15,10 @@
 <body>
     <!-- Hero Section -->
     <div class="hero">
-        <div class="polaroid polaroid-1">
-            <img src="https://via.placeholder.com/200x150?text=University+Campus" alt="University Campus">
-        </div>
-        <div class="polaroid polaroid-2">
-            <img src="https://via.placeholder.com/200x150?text=Students" alt="Students">
-        </div>
-        <div class="polaroid polaroid-3">
-            <img src="https://via.placeholder.com/200x150?text=Campus+Lake" alt="Campus Lake">
-        </div>
-        <div class="polaroid polaroid-4">
-            <img src="https://via.placeholder.com/200x150?text=Incident+Scene" alt="Incident Scene">
-        </div>
-
         <div class="hero-content">
-            <h1>Ragging Tracker</h1>
-            <p>An innovative platform to anonymously report and analyze ragging incidents in real-time</p>
-            <a href="#main-content" class="enter-btn">Enter <i class="fas fa-arrow-right"></i></a>
+            <h1>Welcome to Ragging Tracker</h1>
+            <p>A safe space to anonymously report and analyze ragging incidents in Sri Lankan universities</p>
+            <a href="#main-content" class="cta-btn">Get Started <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 
@@ -39,16 +26,16 @@
     <div id="main-content" class="container">
         <!-- Report Submission Section -->
         <section class="card form-card">
-            <div class="section-badge">Report</div>
             <div class="section-header">
-                <h2>Submit Incident Report</h2>
+                <h2>Report an Incident</h2>
+                <p>We’re here to help. Your report is completely anonymous.</p>
             </div>
             
             <form id="reportForm">
                 <div class="form-group">
                     <label for="university"><i class="fas fa-university"></i> University</label>
                     <select id="university" required>
-                        <option value="" disabled selected>Choose University</option>
+                        <option value="" disabled selected>Select your university</option>
                         <option value="Colombo">Colombo</option>
                         <option value="Jaffna">Jaffna</option>
                         <option value="Peradeniya">Peradeniya</option>
@@ -62,9 +49,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="raggingType"><i class="fas fa-exclamation-circle"></i> Ragging Type</label>
+                    <label for="raggingType"><i class="fas fa-exclamation-circle"></i> Type of Ragging</label>
                     <select id="raggingType" required>
-                        <option value="" disabled selected>Choose Ragging Type</option>
+                        <option value="" disabled selected>Select the type</option>
                         <option value="Verbal Harassment">Verbal Harassment</option>
                         <option value="Physical Harassment">Physical Harassment</option>
                         <option value="Sexual Harassment">Sexual Harassment</option>
@@ -75,13 +62,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="perpetrator"><i class="fas fa-user-secret"></i> Perpetrator (Optional)</label>
-                    <input type="text" id="perpetrator" placeholder="Enter name (if known)">
+                    <label for="perpetrator"><i class="fas fa-user"></i> Perpetrator (Optional)</label>
+                    <input type="text" id="perpetrator" placeholder="Enter name if known">
                 </div>
 
                 <div class="form-group">
                     <label for="details"><i class="fas fa-comment-alt"></i> Incident Details</label>
-                    <textarea id="details" rows="5" placeholder="Describe the incident" required></textarea>
+                    <textarea id="details" rows="5" placeholder="Tell us what happened" required></textarea>
                 </div>
 
                 <button type="submit" id="submitReportBtn">
@@ -91,22 +78,20 @@
             <div class="loader" id="reportLoader"></div>
         </section>
 
-        <div class="glow-line"></div>
-
         <!-- Search Section -->
         <section class="card search-card">
-            <div class="section-badge">Search</div>
             <div class="section-header">
                 <h2>Search Perpetrators</h2>
+                <p>Find reported incidents by perpetrator name.</p>
             </div>
             
             <div class="form-group">
-                <label for="searchQuery"><i class="fas fa-search"></i> Perpetrator Name</label>
-                <input type="text" id="searchQuery" placeholder="Search by name">
+                <label for="searchQuery"><i class="fas fa-search"></i> Search by Name</label>
+                <input type="text" id="searchQuery" placeholder="Enter perpetrator name">
             </div>
 
             <div class="form-group">
-                <label for="filterOptions"><i class="fas fa-filter"></i> Filter By</label>
+                <label for="filterOptions"><i class="fas fa-filter"></i> Filter Results</label>
                 <select id="filterOptions">
                     <option value="all">All Reports</option>
                     <option value="recent">Recent Reports</option>
@@ -127,23 +112,21 @@
             </div>
         </section>
 
-        <div class="glow-line"></div>
-
         <!-- Analytics Section -->
         <section class="card analytics-card">
-            <div class="section-badge">Insights</div>
             <div class="section-header">
-                <h2>Incident Analytics</h2>
+                <h2>Incident Insights</h2>
+                <p>Understand ragging trends with real-time analytics.</p>
             </div>
             
             <div class="chart-container">
                 <div class="chart-wrapper">
-                    <div class="chart-title">By University</div>
+                    <div class="chart-title">Incidents by University</div>
                     <canvas id="universityChart"></canvas>
                 </div>
                 
                 <div class="chart-wrapper">
-                    <div class="chart-title">By Ragging Type</div>
+                    <div class="chart-title">Incidents by Type</div>
                     <canvas id="raggingTypeChart"></canvas>
                 </div>
                 
@@ -159,11 +142,11 @@
             </div>
             
             <button type="button" id="exportBtn">
-                <i class="fas fa-file-export"></i> Export Data
+                <i class="fas fa-file-export"></i> Export Insights
             </button>
         </section>
     </div>
 
     <script src="script.js"></script>
 </body>
-                </html>
+                                               </html>
