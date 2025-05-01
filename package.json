@@ -1,7 +1,7 @@
 {
   "name": "ragging-tracker",
   "version": "1.0.0",
-  "description": "A futuristic ragging incident tracking system for Sri Lankan universities",
+  "description": "A ragging incident tracking system for Sri Lankan universities",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
