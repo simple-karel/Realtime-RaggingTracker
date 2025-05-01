@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ragging Tracker System</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Ragging Tracker System</h1>
+    <p>Anonymously report and track ragging incidents in Sri Lankan universities.</p>
+
+    <!-- Report Submission Form -->
+    <section class="form-section">
+      <h2>Submit a Report</h2>
+      <form id="reportForm">
+        <select id="university" required>
+          <option value="" disabled selected>Select University</option>
+          <option value="Colombo">Colombo</option>
+          <option value="Jaffna">Jaffna</option>
+          <option value="Peradeniya">Peradeniya</option>
+          <option value="Jayewardenepura">Jayewardenepura</option>
+          <option value="Ruhuna">Ruhuna</option>
+          <option value="Sabaragamuwa">Sabaragamuwa</option>
+          <option value="Kelaniya">Kelaniya</option>
+          <option value="Eastern">Eastern</option>
+          <option value="South Eastern">South Eastern</option>
+        </select>
+        <select id="raggingType" required>
+          <option value="" disabled selected>Select Ragging Type</option>
+          <option value="Verbal Harassment">Verbal Harassment</option>
+          <option value="Physical Harassment">Physical Harassment</option>
+          <option value="Sexual Harassment">Sexual Harassment</option>
+          <option value="Psychological Abuse">Psychological Abuse</option>
+          <option value="Cyber Bullying">Cyber Bullying</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="text" id="perpetrator" placeholder="Perpetrator Name (Optional)">
+        <textarea id="details" placeholder="Incident Details" required></textarea>
+        <button type="submit">Submit Report</button>
+      </form>
+    </section>
+
+    <!-- Perpetrator Search -->
+    <section class="search-section">
+      <h2>Search Perpetrators</h2>
+      <input type="text" id="searchInput" placeholder="Enter perpetrator name">
+      <button onclick="searchPerpetrators()">Search</button>
+      <div id="searchResults"></div>
+    </section>
+
+    <!-- Analytics Dashboard -->
+    <section class="analytics-section">
+      <h2>Analytics Dashboard</h2>
+      <div class="chart-container">
+        <canvas id="universityChart"></canvas>
+        <canvas id="raggingTypeChart"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
