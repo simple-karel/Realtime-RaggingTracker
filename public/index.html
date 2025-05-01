@@ -1,67 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ragging Tracker System</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ragging Tracker System</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for analytics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Socket.io for real-time updates -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Ragging Tracker System</h1>
-    <p>Anonymously report and track ragging incidents in Sri Lankan universities.</p>
+    <!-- Background floating elements -->
+    <div class="floating-element float-1"></div>
+    <div class="floating-element float-2"></div>
 
-    <!-- Report Submission Form -->
-    <section class="form-section">
-      <h2>Submit a Report</h2>
-      <form id="reportForm">
-        <select id="university" required>
-          <option value="" disabled selected>Select University</option>
-          <option value="Colombo">Colombo</option>
-          <option value="Jaffna">Jaffna</option>
-          <option value="Peradeniya">Peradeniya</option>
-          <option value="Jayewardenepura">Jayewardenepura</option>
-          <option value="Ruhuna">Ruhuna</option>
-          <option value="Sabaragamuwa">Sabaragamuwa</option>
-          <option value="Kelaniya">Kelaniya</option>
-          <option value="Eastern">Eastern</option>
-          <option value="South Eastern">South Eastern</option>
-        </select>
-        <select id="raggingType" required>
-          <option value="" disabled selected>Select Ragging Type</option>
-          <option value="Verbal Harassment">Verbal Harassment</option>
-          <option value="Physical Harassment">Physical Harassment</option>
-          <option value="Sexual Harassment">Sexual Harassment</option>
-          <option value="Psychological Abuse">Psychological Abuse</option>
-          <option value="Cyber Bullying">Cyber Bullying</option>
-          <option value="Other">Other</option>
-        </select>
-        <input type="text" id="perpetrator" placeholder="Perpetrator Name (Optional)">
-        <textarea id="details" placeholder="Incident Details" required></textarea>
-        <button type="submit">Submit Report</button>
-      </form>
-    </section>
+    <div class="container">
+        <header>
+            <h1>Ragging Tracker System</h1>
+            <p>Anonymous reporting and real-time analytics for ragging incidents in Sri Lankan universities</p>
+        </header>
 
-    <!-- Perpetrator Search -->
-    <section class="search-section">
-      <h2>Search Perpetrators</h2>
-      <input type="text" id="searchInput" placeholder="Enter perpetrator name">
-      <button onclick="searchPerpetrators()">Search</button>
-      <div id="searchResults"></div>
-    </section>
+        <section class="form-section">
+            <div class="section-badge">Report</div>
+            <div class="section-header">
+                <h2>Submit Incident Report</h2>
+            </div>
+            
+            <form id="reportForm">
+                <div class="form-group">
+                    <label for="university">University</label>
+                    <select id="university" required>
+                        <option value="" disabled selected>Select University</option>
+                        <option value="Colombo">Colombo</option>
+                        <option value="Jaffna">Jaffna</option>
+                        <option value="Peradeniya">Peradeniya</option>
+                        <option value="Jayewardenepura">Jayewardenepura</option>
+                        <option value="Ruhuna">Ruhuna</option>
+                        <option value="Sabaragamuwa">Sabaragamuwa</option>
+                        <option value="Kelaniya">Kelaniya</option>
+                        <option value="Eastern">Eastern</option>
+                        <option value="South Eastern">South Eastern</option>
+                    </select>
+                </div>
 
-    <!-- Analytics Dashboard -->
-    <section class="analytics-section">
-      <h2>Analytics Dashboard</h2>
-      <div class="chart-container">
-        <canvas id="universityChart"></canvas>
-        <canvas id="raggingTypeChart"></canvas>
-      </div>
-    </section>
-  </div>
+                <div class="form-group">
+                    <label for="raggingType">Ragging Type</label>
+                    <select id="raggingType" required>
+                        <option value="" disabled selected>Select Ragging Type</option>
+                        <option value="Verbal Harassment">Verbal Harassment</option>
+                        <option value="Physical Harassment">Physical Harassment</option>
+                        <option value="Sexual Harassment">Sexual Harassment</option>
+                        <option value="Psychological Abuse">Psychological Abuse</option>
+                        <option value="Cyber Bullying">Cyber Bullying</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
 
-  <script src="script.js"></script>
+                <div class="form-group">
+                    <label for="perpetrator">Perpetrator Name (Optional)</label>
+                    <input type="text" id="perpetrator" placeholder="Enter perpetrator name">
+                </div>
+
+                <div class="form-group">
+                    <label for="details">Incident Details</label>
+                    <textarea id="details" rows="4" placeholder="Describe the incident" required></textarea>
+                </div>
+
+                <button type="submit" id="submitReportBtn">
+                    <i class="fas fa-sync-alt"></i> Submit Report
+                </button>
+            </form>
+            <div class="loader" id="reportLoader"></div>
+        </section>
+
+        <div class="glow-line"></div>
+
+        <section class="search-section">
+            <div class="section-badge">Search</div>
+            <div class="section-header">
+                <h2>Perpetrator Search</h2>
+            </div>
+            
+            <div class="form-group">
+                <label for="searchQuery">Search Perpetrator</label>
+                <input type="text" id="searchQuery" placeholder="Enter perpetrator name">
+            </div>
+
+            <div class="form-group">
+                <label for="filterOptions">Filter By</label>
+                <select id="filterOptions">
+                    <option value="all">All Reports</option>
+                    <option value="recent">Recent Reports</option>
+                    <option value="university">By University</option>
+                    <option value="raggingType">By Ragging Type</option>
+                </select>
+            </div>
+
+            <button type="button" id="searchBtn">
+                <i class="fas fa-search"></i> Search
+            </button>
+
+            <div id="searchResults">
+                <!-- Search results will appear here -->
+                <div class="result-item">
+                    <div class="result-title">No Results</div>
+                    <div class="result-description">Search for a perpetrator to view reports.</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glow-line"></div>
+
+        <section class="analytics-section">
+            <div class="section-badge">Analytics</div>
+            <div class="section-header">
+                <h2>Incident Analytics</h2>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Incidents by University</div>
+                    <canvas id="universityChart"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <div class="chart-title">Incidents by Ragging Type</div>
+                    <canvas id="raggingTypeChart"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <div class="chart-title">Incident Trends Over Time</div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <div class="chart-title">Incident Distribution</div>
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <button type="button" id="exportBtn">
+                <i class="fas fa-file-export"></i> Export Report
+            </button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
 </body>
-</html>
+                                                                                                   </html>
