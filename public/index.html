@@ -7,45 +7,45 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for analytics -->
+    <!-- Chart.js for analytics section -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- Socket.io for real-time updates -->
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- Hero Section with Percentage Stats, Pie Charts, and Live Updates -->
+    <!-- Hero Section with Circular Progress Rings and Breakdown Lists -->
     <div class="hero">
         <div class="hero-stats">
-            <div class="percentage-container">
-                <div class="stat-box campus-stat">
-                    <h1 id="campusPercentage">0%</h1>
-                    <p id="campusName">No Data</p>
-                    <p>Campus with Most Incidents</p>
-                </div>
-                <div class="stat-box type-stat">
-                    <h1 id="typePercentage">0%</h1>
-                    <p id="typeName">No Data</p>
-                    <p>Most Common Ragging Type</p>
-                </div>
-                <div class="chart-container-hero">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">Incidents by Campus</div>
-                        <canvas id="campusPieChart"></canvas>
+            <div class="progress-container">
+                <div class="progress-wrapper">
+                    <div class="progress-title">Incidents by University</div>
+                    <div class="progress-circle university-progress">
+                        <svg class="progress-ring" width="300" height="300">
+                            <circle class="progress-ring-circle" stroke="#40C4FF" stroke-width="20" fill="transparent" r="140" cx="150" cy="150"/>
+                        </svg>
+                        <div class="progress-total" id="universityTotal">0</div>
                     </div>
-                    <div class="chart-wrapper">
-                        <div class="chart-title">Incidents by Type</div>
-                        <canvas id="typePieChart"></canvas>
+                    <div class="breakdown-list" id="universityBreakdown"></div>
+                </div>
+                <div class="progress-wrapper">
+                    <div class="progress-title">Incidents by Type</div>
+                    <div class="progress-circle type-progress">
+                        <svg class="progress-ring" width="300" height="300">
+                            <circle class="progress-ring-circle" stroke="#F50057" stroke-width="20" fill="transparent" r="140" cx="150" cy="150"/>
+                        </svg>
+                        <div class="progress-total" id="typeTotal">0</div>
                     </div>
+                    <div class="breakdown-list" id="typeBreakdown"></div>
                 </div>
             </div>
             <aside class="live-updates-box">
                 <div class="updates-header">
-                    <h3>Recent Incident Updates</h3>
-                    <p>Latest reports submitted by users</p>
+                    <h3>Live Updates</h3>
+                    <p>Recent reports from users</p>
                 </div>
                 <div class="updates-list" id="liveUpdates">
                     <div class="update-item">
-                        <div class="update-text">No recent reports. Submit one to see updates!</div>
+                        <div class="update-text">No recent reports. Submit one to start!</div>
                     </div>
                 </div>
             </aside>
@@ -57,8 +57,8 @@
         <!-- Report Submission Section -->
         <section class="card form-card">
             <div class="section-header">
-                <h2>Report an Incident</h2>
-                <p>We’re here to help. Your report is completely anonymous.</p>
+                <h2>Submit a Report</h2>
+                <p>Your anonymity is our priority.</p>
             </div>
             
             <form id="reportForm">
@@ -98,11 +98,11 @@
 
                 <div class="form-group">
                     <label for="details"><i class="fas fa-comment-alt"></i> Incident Details</label>
-                    <textarea id="details" rows="5" placeholder="Tell us what happened" required></textarea>
+                    <textarea id="details" rows="5" placeholder="Describe the incident" required></textarea>
                 </div>
 
                 <button type="submit" id="submitReportBtn">
-                    <i class="fas fa-paper-plane"></i> Submit Report
+                    <i class="fas fa-paper-plane"></i> Submit
                 </button>
             </form>
             <div class="loader" id="reportLoader"></div>
@@ -111,8 +111,8 @@
         <!-- Search Section -->
         <section class="card search-card">
             <div class="section-header">
-                <h2>Search Perpetrators</h2>
-                <p>Find reported incidents by perpetrator name.</p>
+                <h2>Search Reports</h2>
+                <p>Search for incidents by perpetrator name.</p>
             </div>
             
             <div class="form-group">
@@ -137,7 +137,7 @@
             <div id="searchResults">
                 <div class="result-item">
                     <div class="result-title">No Results</div>
-                    <div class="result-description">Search for a perpetrator to view reports.</div>
+                    <div class="result-description">Search to view reports.</div>
                 </div>
             </div>
         </section>
@@ -145,21 +145,11 @@
         <!-- Analytics Section -->
         <section class="card analytics-card">
             <div class="section-header">
-                <h2>Incident Insights</h2>
-                <p>Understand ragging trends with real-time analytics.</p>
+                <h2>Analytics Dashboard</h2>
+                <p>Insights into ragging trends.</p>
             </div>
             
             <div class="chart-container">
-                <div class="chart-wrapper">
-                    <div class="chart-title">Incidents by University</div>
-                    <canvas id="universityChart"></canvas>
-                </div>
-                
-                <div class="chart-wrapper">
-                    <div class="chart-title">Incidents by Type</div>
-                    <canvas id="raggingTypeChart"></canvas>
-                </div>
-                
                 <div class="chart-wrapper">
                     <div class="chart-title">Trends Over Time</div>
                     <canvas id="trendChart"></canvas>
@@ -172,11 +162,19 @@
             </div>
             
             <button type="button" id="exportBtn">
-                <i class="fas fa-file-export"></i> Export Insights
+                <i class="fas fa-file-export"></i> Export Data
             </button>
         </section>
     </div>
 
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Xnodes Development. All rights reserved.</p>
+            <p>Project by Sanku</p>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
 </body>
-    </html>
+</html>
