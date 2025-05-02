@@ -1,7 +1,20 @@
 [build]
-  base = "/"
-  publish = "public"
-  functions = "netlify/functions"
+  command = "npm install && npm run build" # ගැලපෙන build command එක යොදන්න
+  publish = "public" # Static files host කරන්න
+
+[functions]
+  directory = "netlify/functions" # Netlify Functions directory එක
+
+[dev]
+  framework = "#custom" # Custom server setup
+  command = "node server.js" # `server.js` එක main server ලෙස ප්‍රේරණය කරන්න
+  targetPort = 3000 # ඔබේ server port එක
+
+[headers]
+  [[headers]]
+    for = "/*"
+    [headers.values]
+      Access-Control-Allow-Origin = "*"
 
 [[redirects]]
   from = "/*"
