@@ -4,7 +4,7 @@ const app = express();
 
 app.use(express.json());
 
-let reports = []; // In-memory storage (replace with a database in production)
+let reports = [];
 
 app.get('/reports', (req, res) => {
   res.json(reports);
