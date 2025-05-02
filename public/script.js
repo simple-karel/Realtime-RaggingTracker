@@ -1,10 +1,5 @@
-// Initialize Socket.io with fallback for Netlify environment
-const socket = window.io ? io() : {
-  on: function(event, callback) {
-    console.log('Socket.io not available in this environment');
-    // We'll implement a polling fallback for Netlify
-  }
-};
+// Initialize Socket.io
+const socket = io();
 
 // DOM Elements
 const reportForm = document.getElementById('reportForm');
@@ -74,80 +69,13 @@ function initCharts() {
 // Fetch and Update Data
 async function fetchData() {
   try {
-    const response = await fetch('/.netlify/functions/api/reports');
+    const response = await fetch('/api/reports');
     const reports = await response.json();
     updateProgressRings(reports);
     updateCharts(reports);
-    
-    // In Netlify environment, we need to simulate socket updates with polling
-    if (!window.io) {
-      checkForNewReports(reports);
-    }
   } catch (error) {
     console.error('Error fetching data:', error);
-    // Fallback to original endpoint if Netlify function fails
-    try {
-      const response = await fetch('/api/reports');
-      const reports = await response.json();
-      updateProgressRings(reports);
-      updateCharts(reports);
-    } catch (fallbackError) {
-      console.error('Error fetching data (fallback):', fallbackError);
-    }
   }
-}
-
-// For Netlify: Store the latest report ID to detect new reports
-let latestReportId = null;
-
-// For Netlify: Polling function to check for new reports
-function checkForNewReports(reports) {
-  if (reports.length === 0) return;
-  
-  // Sort reports by timestamp (newest first)
-  const sortedReports = [...reports].sort((a, b) => 
-    new Date(b.timestamp) - new Date(a.timestamp)
-  );
-  
-  const newestReport = sortedReports[0];
-  
-  // If we have a new report that we haven't seen before
-  if (latestReportId !== null && newestReport.id !== latestReportId) {
-    // Find all new reports (there might be more than one)
-    const newReports = sortedReports.filter(report => 
-      new Date(report.timestamp) > new Date(latestReportId)
-    );
-    
-    // Trigger updates for each new report
-    newReports.forEach(report => {
-      const updateItem = document.createElement('div');
-      updateItem.classList.add('update-item');
-      updateItem.innerHTML = `
-        <div class="update-text">
-          New report: ${report.university} - ${report.raggingType}
-        </div>
-        <div class="update-timestamp">
-          ${new Date(report.timestamp).toLocaleString()}
-        </div>
-      `;
-      liveUpdates.appendChild(updateItem);
-
-      // Limit to last 20 updates
-      const updateItems = liveUpdates.querySelectorAll('.update-item');
-      if (updateItems.length > 20) {
-        liveUpdates.removeChild(updateItems[0]);
-      }
-
-      // Scroll to the bottom
-      liveUpdates.scrollTop = liveUpdates.scrollHeight;
-    });
-  }
-  
-  // Update the latest report ID
-  latestReportId = newestReport.id;
-  
-  // Poll again in 10 seconds
-  setTimeout(() => fetchData(), 10000);
 }
 
 function updateProgressRings(reports) {
@@ -242,21 +170,11 @@ reportForm.addEventListener('submit', async (e) => {
   };
 
   try {
-    // Try Netlify function endpoint first
-    let response = await fetch('/.netlify/functions/api/reports', {
+    const response = await fetch('/api/reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(report),
     });
-
-    // If Netlify endpoint fails, try the original endpoint
-    if (!response.ok) {
-      response = await fetch('/api/reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(report),
-      });
-    }
 
     if (response.ok) {
       reportForm.reset();
@@ -278,15 +196,7 @@ searchBtn.addEventListener('click', async () => {
   const filter = filterOptions.value;
 
   try {
-    // Try Netlify function endpoint first
-    let response;
-    try {
-      response = await fetch('/.netlify/functions/api/reports');
-    } catch (error) {
-      // Fall back to original endpoint
-      response = await fetch('/api/reports');
-    }
-    
+    const response = await fetch('/api/reports');
     const reports = await response.json();
 
     let filteredReports = reports;
@@ -347,15 +257,7 @@ function displaySearchResults(reports) {
 // Export Data
 exportBtn.addEventListener('click', async () => {
   try {
-    // Try Netlify function endpoint first
-    let response;
-    try {
-      response = await fetch('/.netlify/functions/api/reports');
-    } catch (error) {
-      // Fall back to original endpoint
-      response = await fetch('/api/reports');
-    }
-    
+    const response = await fetch('/api/reports');
     const reports = await response.json();
 
     const csvContent = [
