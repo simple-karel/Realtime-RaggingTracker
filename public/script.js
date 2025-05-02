@@ -1,3 +1,11 @@
+// Initialize Socket.io with fallback for Netlify environment
+const socket = window.io ? io() : {
+  on: function(event, callback) {
+    console.log('Socket.io not available in this environment');
+    // We'll implement a polling fallback for Netlify
+  }
+};
+
 // DOM Elements
 const reportForm = document.getElementById('reportForm');
 const reportLoader = document.getElementById('reportLoader');
@@ -20,101 +28,236 @@ const distributionChart = document.getElementById('distributionChart').getContex
 let tChart, dChart;
 
 function initCharts() {
+  // Trend Line Chart (Analytics Section)
   tChart = new Chart(trendChart, {
     type: 'line',
-    data: { labels: [], datasets: [{ label: 'Incidents Over Time', data: [], borderColor: '#00F0FF', fill: false, tension: 0.3 }] },
-    options: { scales: { y: { beginAtZero: true, ticks: { color: '#A5B4FC' } }, x: { ticks: { color: '#A5B4FC' } } }, plugins: { legend: { labels: { color: '#A5B4FC' } } } }
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incidents Over Time',
+        data: [],
+        borderColor: '#00F0FF',
+        fill: false,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { color: '#A5B4FC' } },
+        x: { ticks: { color: '#A5B4FC' } }
+      },
+      plugins: {
+        legend: { labels: { color: '#A5B4FC' } }
+      }
+    }
   });
+
+  // Distribution Doughnut Chart (Analytics Section)
   dChart = new Chart(distributionChart, {
     type: 'doughnut',
-    data: { labels: [], datasets: [{ label: 'Incident Distribution', data: [], backgroundColor: ['#00F0FF', '#FF00E6', '#00FF85', '#E0E0FF'] }] },
-    options: { plugins: { legend: { labels: { color: '#A5B4FC' } } } }
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Incident Distribution',
+        data: [],
+        backgroundColor: ['#00F0FF', '#FF00E6', '#00FF85', '#E0E0FF'],
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: '#A5B4FC' } }
+      }
+    }
   });
 }
 
 // Fetch and Update Data
 async function fetchData() {
   try {
-    const response = await fetch('/api/reports');
+    const response = await fetch('/.netlify/functions/api/reports');
     const reports = await response.json();
     updateProgressRings(reports);
     updateCharts(reports);
+    
+    // In Netlify environment, we need to simulate socket updates with polling
+    if (!window.io) {
+      checkForNewReports(reports);
+    }
   } catch (error) {
     console.error('Error fetching data:', error);
+    // Fallback to original endpoint if Netlify function fails
+    try {
+      const response = await fetch('/api/reports');
+      const reports = await response.json();
+      updateProgressRings(reports);
+      updateCharts(reports);
+    } catch (fallbackError) {
+      console.error('Error fetching data (fallback):', fallbackError);
+    }
   }
 }
 
+// For Netlify: Store the latest report ID to detect new reports
+let latestReportId = null;
+
+// For Netlify: Polling function to check for new reports
+function checkForNewReports(reports) {
+  if (reports.length === 0) return;
+  
+  // Sort reports by timestamp (newest first)
+  const sortedReports = [...reports].sort((a, b) => 
+    new Date(b.timestamp) - new Date(a.timestamp)
+  );
+  
+  const newestReport = sortedReports[0];
+  
+  // If we have a new report that we haven't seen before
+  if (latestReportId !== null && newestReport.id !== latestReportId) {
+    // Find all new reports (there might be more than one)
+    const newReports = sortedReports.filter(report => 
+      new Date(report.timestamp) > new Date(latestReportId)
+    );
+    
+    // Trigger updates for each new report
+    newReports.forEach(report => {
+      const updateItem = document.createElement('div');
+      updateItem.classList.add('update-item');
+      updateItem.innerHTML = `
+        <div class="update-text">
+          New report: ${report.university} - ${report.raggingType}
+        </div>
+        <div class="update-timestamp">
+          ${new Date(report.timestamp).toLocaleString()}
+        </div>
+      `;
+      liveUpdates.appendChild(updateItem);
+
+      // Limit to last 20 updates
+      const updateItems = liveUpdates.querySelectorAll('.update-item');
+      if (updateItems.length > 20) {
+        liveUpdates.removeChild(updateItems[0]);
+      }
+
+      // Scroll to the bottom
+      liveUpdates.scrollTop = liveUpdates.scrollHeight;
+    });
+  }
+  
+  // Update the latest report ID
+  latestReportId = newestReport.id;
+  
+  // Poll again in 10 seconds
+  setTimeout(() => fetchData(), 10000);
+}
+
 function updateProgressRings(reports) {
-  const universityCounts = reports.reduce((acc, report) => { acc[report.university] = (acc[report.university] || 0) + 1; return acc; }, {});
+  // University Progress Ring and Breakdown
+  const universityCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
   const totalUniversities = Object.values(universityCounts).reduce((sum, val) => sum + val, 0);
   universityTotal.textContent = totalUniversities;
+
+  // Update progress ring animation (circumference = 2 * π * r = 2 * π * 140 ≈ 879.65)
   const universityCircle = document.querySelector('.university-progress .progress-ring-circle');
-  const progress = totalUniversities > 0 ? (totalUniversities / 100) * 879.65 : 0;
+  const progress = totalUniversities > 0 ? (totalUniversities / 100) * 879.65 : 0; // Scale progress to max 100 reports
   universityCircle.style.strokeDasharray = `${progress} 879.65`;
+
+  // Update breakdown list
   universityBreakdown.innerHTML = '';
-  Object.entries(universityCounts).sort((a, b) => b[1] - a[1]).forEach(([university, count]) => {
+  const universities = Object.entries(universityCounts);
+  universities.sort((a, b) => b[1] - a[1]); // Sort by count descending
+  universities.forEach(([university, count]) => {
     const percentage = totalUniversities ? Math.round((count / totalUniversities) * 100) : 0;
-    universityBreakdown.innerHTML += `<div class="breakdown-item"><span>${university}</span><span>${percentage}%</span></div>`;
+    const item = document.createElement('div');
+    item.classList.add('breakdown-item');
+    item.innerHTML = `
+      <span>${university}</span>
+      <span>${percentage}%</span>
+    `;
+    universityBreakdown.appendChild(item);
   });
 
-  const raggingTypeCounts = reports.reduce((acc, report) => { acc[report.raggingType] = (acc[report.raggingType] || 0) + 1; return acc; }, {});
+  // Type Progress Ring and Breakdown
+  const raggingTypeCounts = reports.reduce((acc, report) => {
+    acc[report.raggingType] = (acc[report.raggingType] || 0) + 1;
+    return acc;
+  }, {});
   const totalTypes = Object.values(raggingTypeCounts).reduce((sum, val) => sum + val, 0);
   typeTotal.textContent = totalTypes;
+
+  // Update progress ring animation
   const typeCircle = document.querySelector('.type-progress .progress-ring-circle');
-  const typeProgress = totalTypes > 0 ? (totalTypes / 100) * 879.65 : 0;
+  const typeProgress = totalTypes > 0 ? (totalTypes / 100) * 879.65 : 0; // Scale progress to max 100 reports
   typeCircle.style.strokeDasharray = `${typeProgress} 879.65`;
+
+  // Update breakdown list
   typeBreakdown.innerHTML = '';
-  Object.entries(raggingTypeCounts).sort((a, b) => b[1] - a[1]).forEach(([type, count]) => {
+  const types = Object.entries(raggingTypeCounts);
+  types.sort((a, b) => b[1] - a[1]); // Sort by count descending
+  types.forEach(([type, count]) => {
     const percentage = totalTypes ? Math.round((count / totalTypes) * 100) : 0;
-    typeBreakdown.innerHTML += `<div class="breakdown-item"><span>${type}</span><span>${percentage}%</span></div>`;
+    const item = document.createElement('div');
+    item.classList.add('breakdown-item');
+    item.innerHTML = `
+      <span>${type}</span>
+      <span>${percentage}%</span>
+    `;
+    typeBreakdown.appendChild(item);
   });
 }
 
 function updateCharts(reports) {
+  // Trend Chart (by date)
   const dates = reports.map(report => new Date(report.timestamp).toLocaleDateString());
-  const dateCounts = dates.reduce((acc, date) => { acc[date] = (acc[date] || 0) + 1; return acc; }, {});
+  const dateCounts = dates.reduce((acc, date) => {
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
   tChart.data.labels = Object.keys(dateCounts);
   tChart.data.datasets[0].data = Object.values(dateCounts);
   tChart.update();
 
-  const distributionCounts = reports.reduce((acc, report) => { acc[report.university] = (acc[report.university] || 0) + 1; return acc; }, {});
+  // Distribution Chart (Doughnut)
+  const distributionCounts = reports.reduce((acc, report) => {
+    acc[report.university] = (acc[report.university] || 0) + 1;
+    return acc;
+  }, {});
   dChart.data.labels = Object.keys(distributionCounts);
   dChart.data.datasets[0].data = Object.values(distributionCounts);
   dChart.update();
 }
 
-// Initialize Socket.io for Real-Time Updates
-const socket = io();
-socket.on('newReport', (newReport) => {
-  const updateItem = document.createElement('div');
-  updateItem.classList.add('update-item');
-  updateItem.innerHTML = `
-    <div class="update-text">New report: ${newReport.university} - ${newReport.raggingType}</div>
-    <div class="update-timestamp">${new Date(newReport.timestamp).toLocaleString()}</div>
-  `;
-  liveUpdates.appendChild(updateItem);
-  const updateItems = liveUpdates.querySelectorAll('.update-item');
-  if (updateItems.length > 20) liveUpdates.removeChild(updateItems[0]);
-  liveUpdates.scrollTop = liveUpdates.scrollHeight;
-  fetchData();
-});
-
 // Submit Report
 reportForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   reportLoader.style.display = 'block';
+
   const report = {
     university: document.getElementById('university').value,
     raggingType: document.getElementById('raggingType').value,
     perpetrator: document.getElementById('perpetrator').value,
     details: document.getElementById('details').value,
   };
+
   try {
-    const response = await fetch('/api/reports', {
+    // Try Netlify function endpoint first
+    let response = await fetch('/.netlify/functions/api/reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(report),
     });
+
+    // If Netlify endpoint fails, try the original endpoint
+    if (!response.ok) {
+      response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report),
+      });
+    }
+
     if (response.ok) {
       reportForm.reset();
       fetchData();
@@ -133,10 +276,21 @@ reportForm.addEventListener('submit', async (e) => {
 searchBtn.addEventListener('click', async () => {
   const query = searchQuery.value.toLowerCase();
   const filter = filterOptions.value;
+
   try {
-    const response = await fetch('/api/reports');
+    // Try Netlify function endpoint first
+    let response;
+    try {
+      response = await fetch('/.netlify/functions/api/reports');
+    } catch (error) {
+      // Fall back to original endpoint
+      response = await fetch('/api/reports');
+    }
+    
     const reports = await response.json();
+
     let filteredReports = reports;
+
     if (query) {
       filteredReports = filteredReports.filter(report =>
         report.perpetrator.toLowerCase().includes(query) ||
@@ -145,15 +299,18 @@ searchBtn.addEventListener('click', async () => {
         report.details.toLowerCase().includes(query)
       );
     }
+
     if (filter !== 'all') {
       if (filter === 'recent') {
-        filteredReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+        filteredReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        filteredReports = filteredReports.slice(0, 5);
       } else if (filter === 'university') {
         filteredReports.sort((a, b) => a.university.localeCompare(b.university));
       } else if (filter === 'raggingType') {
         filteredReports.sort((a, b) => a.raggingType.localeCompare(b.raggingType));
       }
     }
+
     displaySearchResults(filteredReports);
   } catch (error) {
     console.error('Error searching reports:', error);
@@ -163,15 +320,25 @@ searchBtn.addEventListener('click', async () => {
 function displaySearchResults(reports) {
   searchResults.innerHTML = '';
   if (reports.length === 0) {
-    searchResults.innerHTML = '<div class="result-item"><div class="result-title">No Results</div><div class="result-description">No reports match your search criteria.</div></div>';
+    searchResults.innerHTML = `
+      <div class="result-item">
+        <div class="result-title">No Results</div>
+        <div class="result-description">No reports match your search criteria.</div>
+      </div>
+    `;
     return;
   }
+
   reports.forEach(report => {
     const resultItem = document.createElement('div');
     resultItem.classList.add('result-item');
     resultItem.innerHTML = `
       <div class="result-title">${report.university} - ${report.raggingType}</div>
-      <div class="result-description">Perpetrator: ${report.perpetrator || 'Anonymous'}<br>Details: ${report.details}<br>Reported on: ${new Date(report.timestamp).toLocaleString()}</div>
+      <div class="result-description">
+        Perpetrator: ${report.perpetrator || 'Anonymous'}<br>
+        Details: ${report.details}<br>
+        Reported on: ${new Date(report.timestamp).toLocaleString()}
+      </div>
     `;
     searchResults.appendChild(resultItem);
   });
@@ -180,12 +347,29 @@ function displaySearchResults(reports) {
 // Export Data
 exportBtn.addEventListener('click', async () => {
   try {
-    const response = await fetch('/api/reports');
+    // Try Netlify function endpoint first
+    let response;
+    try {
+      response = await fetch('/.netlify/functions/api/reports');
+    } catch (error) {
+      // Fall back to original endpoint
+      response = await fetch('/api/reports');
+    }
+    
     const reports = await response.json();
+
     const csvContent = [
       ['ID', 'University', 'Ragging Type', 'Perpetrator', 'Details', 'Timestamp'],
-      ...reports.map(report => [report.id, report.university, report.raggingType, report.perpetrator || 'Anonymous', `"${report.details.replace(/"/g, '""')}"`, report.timestamp])
+      ...reports.map(report => [
+        report.id,
+        report.university,
+        report.raggingType,
+        report.perpetrator || 'Anonymous',
+        `"${report.details.replace(/"/g, '""')}"`,
+        report.timestamp
+      ])
     ].map(row => row.join(',')).join('\n');
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -197,6 +381,33 @@ exportBtn.addEventListener('click', async () => {
     console.error('Error exporting data:', error);
     alert('Error exporting data');
   }
+});
+
+// Real-Time Live Updates Box
+socket.on('newReport', (report) => {
+  const updateItem = document.createElement('div');
+  updateItem.classList.add('update-item');
+  updateItem.innerHTML = `
+    <div class="update-text">
+      New report: ${report.university} - ${report.raggingType}
+    </div>
+    <div class="update-timestamp">
+      ${new Date(report.timestamp).toLocaleString()}
+    </div>
+  `;
+  liveUpdates.appendChild(updateItem);
+
+  // Limit to last 20 updates
+  const updateItems = liveUpdates.querySelectorAll('.update-item');
+  if (updateItems.length > 20) {
+    liveUpdates.removeChild(updateItems[0]);
+  }
+
+  // Scroll to the bottom
+  liveUpdates.scrollTop = liveUpdates.scrollHeight;
+
+  // Update progress rings and charts with new data
+  fetchData();
 });
 
 // Initialize
