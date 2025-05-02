@@ -1,11 +1,16 @@
 [build]
-  command = "npm install && npm start"
+  functions = "netlify/functions"
   publish = "public"
 
-[functions]
-  directory = "functions"
-
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200
+
+[dev]
+  framework = "#custom"
+  command = "npm run start"
+  port = 3000
+  targetPort = 3000
+  publish = "public"
+  autoLaunch = true
